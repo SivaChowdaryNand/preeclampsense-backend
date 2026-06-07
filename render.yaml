@@ -1,0 +1,25 @@
+# render.yaml — drop this in the backend/ folder
+# Render auto-deploys when you push to GitHub
+
+services:
+  - type: web
+    name: preeclampsense-api
+    env: python
+    buildCommand: |
+      pip install -r requirements.txt &&
+      python manage.py collectstatic --no-input &&
+      python manage.py migrate
+    startCommand: gunicorn preeclampsense.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: preeclampsense-db
+          property: connectionString
+
+databases:
+  - name: preeclampsense-db
+    plan: free
